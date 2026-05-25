@@ -183,18 +183,25 @@ main() {
 	case "${algorithm}" in
 	sha256)
 		hash=$(sha256sum "${target_file}")
+		status="${?}"
 		;;
 	sha512)
 		hash=$(sha512sum "${target_file}")
+		status="${?}"
 		;;
 	md5)
 		hash=$(md5sum "${target_file}")
+		status="${?}"
 		;;
 	*)
 		printf "[%(%H:%M:%S)T]: %s: Invalid algorithm '%s' was specified. One of 'sha256', 'sha512', or 'md5' must be provided.\n" -1 "$(basename "${0}")" "${algorithm}" >&2
 		return 2
 		;;
 	esac
+	if [ "${status}" -ne 0 ]; then
+		printf "[%(%H:%M:%S)T: %s checksum for target file '%s' could not be calculated using algorithm '%s'.\n]" -1 "$(basename "${0}")" "${target_file}" "${algorithm}" >&2
+		return 4
+	fi
 
 	# ------------------------------------------------ #
 	# Compare Calculated Checksum to Provided Checksum #
