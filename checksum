@@ -30,7 +30,7 @@
 # 1: Calculated Checksum Did Not Match  #
 # 2: Error During Argument Parsing      #
 # 3: Missing Dependency                 #
-# 4: Unable to Calculate Checksum       #
+# 4: Unable to Make Temporary File      #
 # ------------------------------------- #
 
 _program_name="$(basename "${0}")"
@@ -173,6 +173,17 @@ main() {
 	provided_hash="${2}"
 
 	# ---------------------------------- #
+	# Create Temporary File for Checksum #
+	# ---------------------------------- #
+	if ! tmp=$(mktemp -q -- "${TMPDIR:-/tmp}/checksum.XXXXXXXXXXXXXXXX"); then
+		printf "[%s]: %s: failed to create temporary file.\n" "$(date +'%H:%M:%S')" "${_program_name}" >&2
+		return 4
+	else
+		trap 'rm -rf "${tmp}"' EXIT HUP INT QUIT ABRT TERM # Removes the temp file when execution finishes, except on receipt of SIGKILL
+		printf "%s  %s" "${provided_hash}" "${target_file}" >"${tmp}"
+	fi
+
+	# ---------------------------------- #
 	# Calculate Checksum for Target File #
 	# ---------------------------------- #
 	if [ -z "${algorithm}" ]; then
@@ -184,32 +195,28 @@ main() {
 	fi
 	case "${algorithm}" in
 	sha256)
-		hash=$(sha256sum "${target_file}")
+		sha256sum --status --check "${tmp}"
 		status="${?}"
 		;;
 	sha512)
-		hash=$(sha512sum "${target_file}")
+		sha512sum --status --check "${tmp}"
 		status="${?}"
 		;;
 	md5)
-		hash=$(md5sum "${target_file}")
+		md5sum --status --check "${tmp}"
 		status="${?}"
 		;;
 	*)
-		printf "[%(%H:%M:%S)T]: %s: Invalid algorithm '%s' was specified. One of 'sha256', 'sha512', or 'md5' must be provided.\n" -1 "$(basename "${0}")" "${algorithm}" >&2
+		printf "[%s]: %s: Invalid algorithm '%s' was specified. One of 'sha256', 'sha512', or 'md5' must be provided.\n" "$(date +'%H:%M:%S')" "${_program_name}" "${algorithm}" >&2
 		return 2
 		;;
 	esac
-	if [ "${status}" -ne 0 ]; then
-		printf "[%(%H:%M:%S)T: %s checksum for target file '%s' could not be calculated using algorithm '%s'.\n]" -1 "$(basename "${0}")" "${target_file}" "${algorithm}" >&2
-		return 4
-	fi
 
 	# ------------------------------------------------ #
 	# Compare Calculated Checksum to Provided Checksum #
 	# ------------------------------------------------ #
-	if [ "${hash}" != "${provided_hash}" ]; then
-		printf "[%(%H:%M:%S)T]: %s: checksum for target file '%s' does not match provided checksum '%s' using algorithm '%s'.\n" -1 "$(basename "${0}")" "${target_file}" "${provided_hash}" "${algorithm}" >&2
+	if [ "${status}" -ne 0 ]; then
+		printf "[%s]: %s: checksum for target file '%s' does not match provided checksum '%s' using algorithm '%s'.\n" "$(date +'%H:%M:%S')" "${_program_name}" "${target_file}" "${provided_hash}" "${algorithm}" >&2
 		return 1
 	fi
 }
