@@ -60,6 +60,9 @@ version() {
 }
 
 main() {
+	# -------------------- #
+	# Parse Optional Flags #
+	# -------------------- #
 	while [ "${#}" -gt 0 ]; do
 		if printf "%s" "${1}" | grep -q -E -- "^(-h)|(--h(e(l(p)?)?)?)" 2>/dev/null; then
 			usage
@@ -157,6 +160,9 @@ main() {
 		fi
 	done
 
+	# ----------------------------------- #
+	# Parse Required Positional Arguments #
+	# ----------------------------------- #
 	if [ "${#}" -lt 2 ]; then
 		printf "[%(%H:%M:%S)T]: %s: <TARGET_FILE> and <CHECKSUM> must be provided.\n" -1 "$(basename "${0}")" >&2
 		return 2
@@ -164,6 +170,9 @@ main() {
 	target_file="${1}"
 	provided_hash="${2}"
 
+	# ---------------------------------- #
+	# Calculate Checksum for Target File #
+	# ---------------------------------- #
 	if [ -z "${algorithm}" ]; then
 		algorithm="sha256"
 		if ! sha256sum --version >/dev/null 2>&1; then
@@ -187,6 +196,9 @@ main() {
 		;;
 	esac
 
+	# ------------------------------------------------ #
+	# Compare Calculated Checksum to Provided Checksum #
+	# ------------------------------------------------ #
 	if [ "${hash}" != "${provided_hash}" ]; then
 		printf "[%(%H:%M:%S)T]: %s: checksum for target file '%s' does not match provided checksum '%s' using algorithm '%s'.\n" -1 "$(basename "${0}")" "${target_file}" "${provided_hash}" "${algorithm}" >&2
 		return 1
