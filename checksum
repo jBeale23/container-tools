@@ -23,6 +23,16 @@
 # SOFTWARE.                                                                      #
 # ------------------------------------------------------------------------------ #
 
+# ------------------------------------- #
+#             Return Codes              #
+# ------------------------------------- #
+# 0: Calculated Checksum Matched        #
+# 1: Calculated Checksum Did Not Match  #
+# 2: Error During Argument Parsing      #
+# 3: Missing Dependency                 #
+# 4: Unable to Calculate Checksum       #
+# ------------------------------------- #
+
 usage() {
 	cat <<-EOF
 		Calculates a checksum for a target and compares it to a provided checksum.
