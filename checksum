@@ -33,11 +33,13 @@
 # 4: Unable to Calculate Checksum       #
 # ------------------------------------- #
 
+_program_name="$(basename "${0}")"
+
 usage() {
 	cat <<-EOF
 		Calculates a checksum for a target and compares it to a provided checksum.
 
-		Usage: $(basename "${0}") [-h|V] | [-a[=| ]<ALGORITHM>] <TARGET_FILE> <CHECKSUM>
+		Usage: ${_program_name} [-h|V] | [-a[=| ]<ALGORITHM>] <TARGET_FILE> <CHECKSUM>
 
 		Options:
 		  -h, --help                  Show this help message and exit.
@@ -109,7 +111,7 @@ main() {
 				algorithm="${1#-a}"
 				;;
 			*)
-				printf "[%(%H:%M:%S)T]: %s: invalid algorithm format -- '%s\n'" -1 "$(basename "${0}")" "${1}" >&2
+				printf "[%s]: %s: invalid algorithm format -- '%s\n'" "$(date +'%H:%M:%S')" "${_program_name}" "${1}" >&2
 				return 2
 				;;
 			esac
@@ -128,24 +130,24 @@ main() {
 			case "${algorithm}" in
 			sha256)
 				if ! sha256sum --version >/dev/null 2>&1; then
-					printf "[%(%H:%M:%S)T]: %s: sha256sum must be installed to check sha256 hashes.\n" -1 "$(basename "${0}")" >&2
+					printf "[%s]: %s: sha256sum must be installed to check sha256 hashes.\n" "$(date +'%H:%M:%S')" "${_program_name}" >&2
 					return 3
 				fi
 				;;
 			sha512)
 				if ! sha512sum --version >/dev/null 2>&1; then
-					printf "[%(%H:%M:%S)T]: %s: sha512sum must be installed to check sha512 hashes.\n" -1 "$(basename "${0}")" >&2
+					printf "[%s]: %s: sha512sum must be installed to check sha512 hashes.\n" "$(date +'%H:%M:%S')" "${_program_name}" >&2
 					return 3
 				fi
 				;;
 			md5)
 				if ! md5sum --version >/dev/null 2>&1; then
-					printf "[%(%H:%M:%S)T]: %s: md5sum must be installed to check md5 hashes.\n" -1 "$(basename "${0}")" >&2
+					printf "[%s]: %s: md5sum must be installed to check md5 hashes.\n" "$(date +'%H:%M:%S')" "${_program_name}" >&2
 					return 3
 				fi
 				;;
 			*)
-				printf "[%(%H:%M:%S)T]: %s: If '--algorithm' is specified, one of 'sha256', 'sha512', or 'md5' must be provided.\n" -1 "$(basename "${0}")" >&2
+				printf "[%s]: %s: If '--algorithm' is specified, one of 'sha256', 'sha512', or 'md5' must be provided.\n" "$(date +'%H:%M:%S')" "${_program_name}" >&2
 				return 2
 				;;
 			esac
@@ -153,7 +155,7 @@ main() {
 			shift
 			break
 		elif printf "%s" "${1}" | grep -q -E -- "^-.*" 2>/dev/null; then
-			printf "[%(%H:%M:%S)T]: %s: invalid option -- '%s'\n" -1 "$(basename "${0}")" "${1}" >&2
+			printf "[%s]: %s: invalid option -- '%s'\n" "$(date +'%H:%M:%S')" "${_program_name}" "${1}" >&2
 			return 2
 		else
 			break
@@ -164,7 +166,7 @@ main() {
 	# Parse Required Positional Arguments #
 	# ----------------------------------- #
 	if [ "${#}" -lt 2 ]; then
-		printf "[%(%H:%M:%S)T]: %s: <TARGET_FILE> and <CHECKSUM> must be provided.\n" -1 "$(basename "${0}")" >&2
+		printf "[%s]: %s: <TARGET_FILE> and <CHECKSUM> must be provided.\n" "$(date +'%H:%M:%S')" "${_program_name}" >&2
 		return 2
 	fi
 	target_file="${1}"
@@ -176,7 +178,7 @@ main() {
 	if [ -z "${algorithm}" ]; then
 		algorithm="sha256"
 		if ! sha256sum --version >/dev/null 2>&1; then
-			printf "[%(%H:%M:%S)T]: %s: sha256sum must be installed to check sha256 hashes.\n" -1 "$(basename "${0}")" >&2
+			printf "[%s]: %s: sha256sum must be installed to check sha256 hashes.\n" "$(date +'%H:%M:%S')" "${_program_name}" >&2
 			return 3
 		fi
 	fi
