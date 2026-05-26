@@ -1,0 +1,3 @@
+[submodule "utilities/inline-checksum"]
+	path = utilities/inline-checksum
+	url = https://github.com/jBeale23/inline-checksum
