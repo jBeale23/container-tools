@@ -29,4 +29,4 @@ EOF
 # ------------------------------- #
 # Install Checksum Utility Script #
 # ------------------------------- #
-COPY "checksum" "/usr/local/bin/"
+COPY "utilities/inline-checksum/inline-checksum" "/usr/local/bin/"
